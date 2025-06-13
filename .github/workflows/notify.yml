@@ -11,6 +11,22 @@ jobs:
   notify:
     runs-on: self-hosted  # Dùng runner tự host trên Windows
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+        shell: powershell
+
+      - name: Run build
+        run: npm run build
+        shell: powershell
+
       - name: Send Slack message
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -23,7 +39,7 @@ jobs:
           $commitUrl = "https://github.com/$repo/commit/$commitHash"
 
           $message = @{
-            text = "Push Notification`nBy: $actor`nRepo: $repo`nMessage: $commitMsg`nCommit: $commitUrl"
+            text = "✅ Build passed and code was pushed.`nBy: $actor`nRepo: $repo`nMessage: $commitMsg`nCommit: $commitUrl"
           } | ConvertTo-Json -Compress
 
           Write-Host "Sending message to Slack..."
