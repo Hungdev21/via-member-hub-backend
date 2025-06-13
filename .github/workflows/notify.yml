@@ -1,4 +1,4 @@
-name: CI/CD with Slack Notifications
+name: Notify on Push
 
 on:
   push:
@@ -8,52 +8,23 @@ on:
       - backend-setup
 
 jobs:
-  build:
-    name: Build Project
-    runs-on: [self-hosted, windows]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Example Build Step
-        run: |
-          echo "🔧 Building project..."
-          # Thay bằng lệnh build thực tế của bạn
-          # ví dụ: npm install && npm run build
-          exit 0  # Thay bằng exit 1 để test lỗi
-
   notify:
-    name: Notify Slack
     runs-on: [self-hosted, windows]
-    needs: build
-    if: always()
     steps:
-      - name: Send Slack Notification
+      - name: Send Slack message
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: pwsh
         run: |
           $actor = "${{ github.actor }}"
           $repo = "${{ github.repository }}"
-          $branch = "${{ github.ref }}"
-          $status = "${{ needs.build.result }}"
           $commitMsg = "${{ github.event.head_commit.message }}"
           $commitHash = "${{ github.event.head_commit.id }}"
           $commitUrl = "https://github.com/$repo/commit/$commitHash"
 
-          if ($status -eq "success") {
-            $emoji = "✅"
-            $statusText = "Build thành công 🎉"
-          } elseif ($status -eq "failure") {
-            $emoji = "❌"
-            $statusText = "Build thất bại 💥"
-          } else {
-            $emoji = "⚠️"
-            $statusText = "Trạng thái: $status"
-          }
-
-          $payload = @{
-            text = "$emoji *CI/CD Thông báo từ GitHub Actions*\n*Người thực hiện:* $actor\n*Repo:* $repo\n*Nhánh:* $branch\n*Tin nhắn:* $commitMsg\n*Commit:* <$commitUrl|$commitHash>\n*Trạng thái:* $statusText"
+          $message = @{
+            text = "📦 Push Notification`n👤 By: $actor`n📁 Repo: $repo`n📝 Message: $commitMsg`n🔗 Commit: $commitUrl"
           } | ConvertTo-Json -Compress
 
-          Write-Host "Gửi thông báo tới Slack..."
-          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method POST -Body $payload -ContentType 'application/json'
+          Write-Host "Sending message to Slack..."
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -Body $message -ContentType 'application/json'
