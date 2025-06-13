@@ -9,7 +9,7 @@ on:
 
 jobs:
   notify:
-    runs-on: [self-hosted, windows]
+    runs-on: self-hosted  # Dùng runner tự host trên Windows
     steps:
       - name: Send Slack message
         env:
@@ -21,10 +21,10 @@ jobs:
           $commitMsg = "${{ github.event.head_commit.message }}"
           $commitHash = "${{ github.event.head_commit.id }}"
           $commitUrl = "https://github.com/$repo/commit/$commitHash"
-          
+
           $message = @{
-            text = "📦 Push Notification`n👤 By: $actor`n📁 Repo: $repo`n📝 Message: $commitMsg`n🔗 Commit: $commitUrl"
+            text = "Push Notification`nBy: $actor`nRepo: $repo`nMessage: $commitMsg`nCommit: $commitUrl"
           } | ConvertTo-Json -Compress
-          
+
           Write-Host "Sending message to Slack..."
           Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -Body $message -ContentType 'application/json'
