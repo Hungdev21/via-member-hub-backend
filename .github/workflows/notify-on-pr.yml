@@ -1,0 +1,42 @@
+name: Notify on PR to Main
+
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+      - backend-setup
+    types:
+      - opened
+      - closed
+      - ready_for_review
+      - review_requested
+      - review_request_removed
+      - reopened
+
+jobs:
+  notify:
+    runs-on: self-hosted  # Windows self-hosted runner
+    steps:
+      - name: Send Slack message on PR activity
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: powershell
+        run: |
+          $event = Get-Content $env:GITHUB_EVENT_PATH | ConvertFrom-Json
+          $pr = $event.pull_request
+          $actor = $env:GITHUB_ACTOR
+          $repo = $env:GITHUB_REPOSITORY
+          $prNumber = $pr.number
+          $action = $event.action
+          $prTitle = $pr.title
+          $sourceBranch = $pr.head.ref
+          $targetBranch = $pr.base.ref
+          $prUrl = $pr.html_url
+
+          $message = @{
+            text = "Pull Request Activity`nActor: $actor`nAction: $action`nRepo: $repo`nFrom: $sourceBranch -> $targetBranch`nTitle: $prTitle`nPR: $prUrl"
+          } | ConvertTo-Json -Compress
+
+          Write-Host "Sending Slack message..."
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -Body $message -ContentType 'application/json'
