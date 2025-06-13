@@ -14,17 +14,17 @@ jobs:
       - name: Send Slack message
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        shell: pwsh
+        shell: powershell
         run: |
           $actor = "${{ github.actor }}"
           $repo = "${{ github.repository }}"
           $commitMsg = "${{ github.event.head_commit.message }}"
           $commitHash = "${{ github.event.head_commit.id }}"
           $commitUrl = "https://github.com/$repo/commit/$commitHash"
-
+          
           $message = @{
             text = "📦 Push Notification`n👤 By: $actor`n📁 Repo: $repo`n📝 Message: $commitMsg`n🔗 Commit: $commitUrl"
           } | ConvertTo-Json -Compress
-
+          
           Write-Host "Sending message to Slack..."
           Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method Post -Body $message -ContentType 'application/json'
