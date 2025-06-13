@@ -1,0 +1,29 @@
+name: Notify on Push code
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+      - backend-setup
+
+jobs:
+  notify:
+    runs-on: [self-hosted, windows]
+    steps:
+      - name: Send Slack message
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          $actor = "${{ github.actor }}"
+          $repo = "${{ github.repository }}"
+          $commitMsg = "${{ github.event.head_commit.message }}"
+          $commitHash = "${{ github.event.head_commit.id }}"
+          $commitUrl = "https://github.com/$repo/commit/$commitHash"
+
+          $payload = @{
+            text = "🟢 *New Push Detected!*\n*By:* $actor\n*Repo:* $repo\n*Message:* $commitMsg\n*Commit:* <$commitUrl|$commitHash>"
+          } | ConvertTo-Json -Compress
+
+          Write-Host "Sending message to Slack..."
+          Invoke-RestMethod -Uri $env:SLACK_WEBHOOK_URL -Method POST -Body $payload -ContentType 'application/json'
