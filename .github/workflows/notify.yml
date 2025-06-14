@@ -23,10 +23,6 @@ jobs:
         run: npm ci
         shell: powershell
 
-      - name: Run build
-        run: npm run build
-        shell: powershell
-
       - name: Send Slack message
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -39,7 +35,7 @@ jobs:
           $commitUrl = "https://github.com/$repo/commit/$commitHash"
 
           $message = @{
-            text = "✅ Build passed and code was pushed.`nBy: $actor`nRepo: $repo`nMessage: $commitMsg`nCommit: $commitUrl"
+            text = "Code was pushed.`nBy: $actor`nRepo: $repo`nMessage: $commitMsg`nCommit: $commitUrl"
           } | ConvertTo-Json -Compress
 
           Write-Host "Sending message to Slack..."
