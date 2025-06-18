@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const MemberChallengesController = require('../controller/memberChallengesController');
+const MemberChallengesController = require('../controllers/memberChallengesController');
 
 // Khởi tạo controller
 const memberChallengesController = new MemberChallengesController();
