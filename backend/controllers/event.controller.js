@@ -7,7 +7,7 @@ const { paginateWithSearch } = require('../repositories/paginate.repositories');
 // @access Public
 const getAllListEvent = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 8;
+  const limit = parseInt(req.query.limit) || 10;
   const keyword = req.query.keyword || '';
 
   const result = await paginateWithSearch({
